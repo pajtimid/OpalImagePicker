@@ -144,6 +144,7 @@ open class OpalImagePickerRootViewController: UIViewController {
     
     private func setup() {
         guard let view = view else { return }
+        PHPhotoLibrary.shared().register(self)
         fetchPhotos()
         
         let collectionView = UICollectionView(frame: view.frame, collectionViewLayout: OpalImagePickerCollectionViewLayout())
@@ -511,6 +512,15 @@ extension OpalImagePickerRootViewController: UICollectionViewDataSource {
         } else {
             assertionFailure("You need to implement `imagePickerNumberOfExternalItems(_:)` in your delegate.")
             return 0
+        }
+    }
+}
+
+extension OpalImagePickerRootViewController: PHPhotoLibraryChangeObserver {
+    public func photoLibraryDidChange(_ changeInstance: PHChange) {
+        DispatchQueue.main.async { [weak self] in
+            self?.photoAssets = PHAsset.fetchAssets(with: self?.fetchOptions)
+            self?.collectionView?.reloadData()
         }
     }
 }
